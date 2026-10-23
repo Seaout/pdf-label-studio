@@ -57,3 +57,162 @@
 .github-link{flex:0 0 auto;font-size:11px;color:#617986;text-decoration:none;white-space:nowrap;border-bottom:1px solid transparent}
 .github-link:hover,.github-link:focus-visible{color:#1e776b;border-bottom-color:currentColor}
 @media(max-width:720px){.footer-status{flex-basis:100%;justify-content:space-between}}
+
+
+/* PDF Label v1.0 - :P Theme */
+
+/* 主题配色 */
+:root {
+  --brand-purple: #363670;
+  --brand-yellow: #FFAE00;
+  --soft-purple: #EFEDFA;
+  --soft-yellow: #FFF3D5;
+  --line-purple: #DEDCEC;
+  --text-main: #292942;
+  --text-muted: #6B6B85;
+}
+
+/* 整体页面 */
+body {
+  background: #F7F6FC;
+  color: var(--text-main);
+}
+.topbar {
+  background: #FFFFFF;
+  border-bottom: 2px solid var(--brand-yellow);
+}
+.settings-scroll {
+  background: #F7F6FC;
+  border-right-color: var(--line-purple);
+}
+.panel {
+  background: #FFFFFF;
+  border-color: #E5E3F0;
+  box-shadow: 0 2px 8px rgba(54,54,112,.035);
+}
+.section-title h2 { color: #706D90; }
+.section-title h2 span { color: var(--brand-purple); }
+
+/* 主要按钮 */
+.btn.primary {
+  background: var(--brand-purple);
+  color: #FFFFFF;
+}
+.btn.primary:hover { background: #29295B; }
+
+.btn.ghost,
+.btn.secondary {
+  background: var(--soft-purple);
+  color: var(--brand-purple);
+  border-color: var(--line-purple);
+}
+.btn.ghost:hover,
+.btn.secondary:hover { background: #E4E1F5; }
+
+.linkbtn, .tiny-reset { color: var(--brand-purple); }
+
+/* 输入框与选项 */
+.control {
+  border-color: var(--line-purple);
+  color: var(--text-main);
+}
+.control:focus {
+  border-color: #7777AE;
+  box-shadow: 0 0 0 3px rgba(54,54,112,.10);
+}
+.switch input:checked + span {
+  background: var(--brand-purple);
+}
+.check-line input,
+.page-enable input {
+  accent-color: var(--brand-purple);
+}
+.field, .font-field, .field-hint {
+  color: var(--text-muted);
+}
+
+/* 格式示例与标签 */
+.formula-preview {
+  background: var(--soft-yellow);
+  color: #716448;
+}
+.formula-preview strong {
+  color: var(--brand-purple);
+}
+.mini-tag, .count-chip {
+  background: var(--soft-yellow);
+  color: var(--brand-purple);
+}
+
+/* 文件与编号列表 */
+.file-item.active {
+  background: #F0EFFA;
+  border-color: #9691CD;
+}
+.file-item .file-symbol {
+  background: var(--soft-yellow);
+  color: var(--brand-purple);
+}
+.map-table input:focus {
+  border-color: #8884C0;
+}
+.font-option:hover,
+.font-option.active {
+  background: var(--soft-purple);
+}
+
+/* PDF 预览区域 */
+.preview-pane { background: #EAEAF5; }
+.preview-header,
+.preview-footer {
+  background: #FFFFFF;
+  border-color: var(--line-purple);
+}
+.page-toolbar,
+.page-strip {
+  background: #F7F6FC;
+  border-color: var(--line-purple);
+}
+.pagechip {
+  border-color: var(--line-purple);
+  color: #626280;
+}
+.pagechip.selected {
+  background: var(--soft-purple);
+  border-color: #A29BD6;
+  color: var(--brand-purple);
+}
+.pagechip.current {
+  outline-color: var(--brand-purple);
+}
+.icon-btn {
+  background: #F5F4FC;
+  border-color: var(--line-purple);
+  color: var(--brand-purple);
+}
+.icon-btn:hover { background: #E9E6F7; }
+
+/* 文字定位框 */
+.label-overlay {
+  border-color: var(--brand-purple);
+  background: rgba(54,54,112,.05);
+}
+.label-overlay:after {
+  background: var(--brand-yellow);
+  color: #292942;
+}
+
+/* 拖入提示与 GitHub 链接 */
+.drop-card { border-color: var(--brand-purple); }
+.drop-card strong { color: var(--brand-purple); }
+.github-link { color: var(--brand-purple); }
+.github-link:hover { color: #29295B; }
+
+/* 滚动条 */
+.settings-scroll,
+.page-strip,
+.file-list,
+.map-wrap,
+.font-results {
+  scrollbar-color: #C6C3DD transparent;
+}
