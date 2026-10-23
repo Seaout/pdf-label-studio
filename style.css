@@ -216,3 +216,38 @@ body {
 .font-results {
   scrollbar-color: #C6C3DD transparent;
 }
+
+
+/* PDF Label - Logo GitHub Link */
+
+.brand-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  text-decoration: none;
+  transform-origin: center;
+  transition: transform 180ms ease-in-out;
+}
+
+/* 鼠标悬停：仅轻微放大 */
+@media (hover: hover) {
+  .brand-icon-link:hover {
+    transform: scale(1.08);
+  }
+}
+
+/* 键盘操作时保留必要的焦点提示 */
+.brand-icon-link:focus-visible {
+  outline: 2px solid #363670;
+  outline-offset: 3px;
+}
+
+/* 尊重系统的减少动画设置 */
+@media (prefers-reduced-motion: reduce) {
+  .brand-icon-link {
+    transition: none;
+  }
+}
