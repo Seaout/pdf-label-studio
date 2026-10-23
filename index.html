@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Label</title><link rel="icon" type="image/png" href="./assets/app-icon.png"><link rel="stylesheet" href="./style.css"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"></head>
+<body>
+<header class="topbar"><div class="brand"><img class="brand-app-icon" src="./assets/app-icon.png" alt="PDF Label 图标" width="35" height="35"><div><strong>PDF Label</strong><small>v1.0</small></div></div><div class="top-actions"><span class="offline"><span class="offline-dot"></span>PDF 仅在浏览器本地处理</span><button id="btnOpen" class="btn ghost">＋ 导入 PDF</button><button id="btnExport" class="btn primary">导出当前 PDF</button></div></header>
+<input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden><input type="file" id="tplInput" accept=".json,application/json" hidden>
+<main class="workbench">
+<aside class="settings-scroll">
+<section class="panel files-panel"><div class="section-title"><h2>01 <span>文件</span></h2><button id="clearFiles" class="linkbtn">移除全部</button></div><div id="fileList" class="file-list"><div class="empty-mini">尚未导入 PDF</div></div><p class="field-hint">支持多文件分别配置，不上传 PDF。</p></section>
+<section class="panel"><div class="section-title"><h2>02 <span>编号规则</span></h2><span class="mini-tag">可独立开关</span></div>
+<div class="toggle-row"><label class="switch"><input id="enablePrefix" type="checkbox" checked><span></span></label><span>前缀</span></div><input id="prefix" class="control" value="附件1-" placeholder="例如：附件1-">
+<div class="toggle-row spacer-top"><label class="switch"><input id="enableSeq" type="checkbox" checked><span></span></label><span>递增序号</span></div>
+<div id="sequenceConfig"><div class="two-cols"><label class="field">起始编号<input id="startNum" class="control" value="1" inputmode="numeric"></label><label class="field">步长<input id="stepNum" class="control" type="number" min="1" max="10000" value="1"></label></div>
+<div class="two-cols"><label class="field">位数模式<select id="digitsMode" class="control"><option value="auto">根据起始编号</option><option value="custom">指定宽度</option></select></label><label class="field">最少位数<input id="digits" class="control" type="number" min="1" max="12" value="3" disabled></label></div></div>
+<div class="toggle-row spacer-top"><label class="switch"><input id="enableSuffix" type="checkbox"><span></span></label><span>后缀</span></div><input id="suffix" class="control" placeholder="例如：（续）" disabled>
+<div class="formula-preview"><span>格式示例</span><strong id="rulePreview">附件1-1</strong></div></section>
+<section class="panel"><div class="section-title"><h2>03 <span>页面分配</span></h2><span id="selectedCount" class="count-chip">0 页</span></div>
+<label class="field">需要编号的 PDF 页面<input id="pageRanges" class="control" placeholder="1-3, 5, 7-8" autocomplete="off"></label><p class="field-hint">支持 1-3,5,7-8；右侧当前页的勾选会同步到这里。</p><div id="rangeError" class="field-error" hidden></div>
+<div class="action-pair"><button id="selectAll" class="btn secondary">全选页面</button><button id="selectNone" class="btn secondary">清空选择</button></div>
+<div class="divider"></div>
+<div class="section-title minor"><h3>编号映射表</h3><button id="resetManual" class="linkbtn">恢复全部自动编号</button></div>
+<div class="map-wrap"><table class="map-table"><thead><tr><th>PDF 页</th><th>输出文字（可编辑）</th><th></th></tr></thead><tbody id="mappingRows"><tr><td colspan="3" class="table-empty">勾选页面后显示编号</td></tr></tbody></table></div>
+</section>
+<section class="panel"><div class="section-title"><h2>04 <span>文字样式</span></h2></div>
+<div class="two-cols font-grid">
+<div class="font-field"><label for="cnFontSearch">中文字体</label><div class="font-picker"><input id="cnFontSearch" class="control font-search" type="text" spellcheck="false" autocomplete="off" placeholder="搜索中文字体" aria-label="中文字体"><div class="font-results" id="cnFontResults" hidden></div></div></div>
+<div class="font-field"><label for="enFontSearch">西文字体</label><div class="font-picker"><input id="enFontSearch" class="control font-search" type="text" spellcheck="false" autocomplete="off" placeholder="Search fonts" aria-label="西文字体"><div class="font-results" id="enFontResults" hidden></div></div></div>
+</div><div class="browser-font-ops"><button type="button" id="scanFonts" class="btn secondary">读取已安装字体</button><label class="font-file-label">导入中文字体<input type="file" id="cnFontFile" accept=".ttf,.otf,.ttc" hidden></label><label class="font-file-label">导入西文字体<input type="file" id="enFontFile" accept=".ttf,.otf,.ttc" hidden></label></div><p class="field-hint" id="fontInfo">优先使用本机宋体（SimSun）＋ Times New Roman，PDF 中分别嵌入中文和西文字形；需授权读取本机字体；未授权时使用内置常用字思源宋体。</p>
+<div class="two-cols"><label class="field">字号（pt）<input id="fontSize" class="control" type="number" min="4" max="90" step="0.5" value="12"></label><label class="field">文字颜色<input id="fontColor" class="color-input" type="color" value="#111111"></label></div>
+<label class="check-line"><input type="checkbox" id="fontBold"> <span>加粗（仅使用真实 Bold 字重）</span></label>
+<p id="fontWeightInfo" class="field-hint font-weight-note" hidden></p>
+<div class="divider"></div><div class="section-title minor"><h3>距离页面左上角</h3><span class="mini-tag">mm</span></div>
+<div class="two-cols"><label class="field">X · 距左边<input id="posX" class="control" type="number" min="0" max="2000" step="0.5" value="15"></label><label class="field">Y · 距上边<input id="posY" class="control" type="number" min="0" max="2000" step="0.5" value="12"></label></div>
+<p class="field-hint">默认统一位置；右侧可切换为“仅调整本页”。</p></section>
+<section class="panel"><div class="section-title"><h2>05 <span>样式模板</span></h2></div><label class="check-line"><input type="checkbox" id="saveRule" checked> <span>模板同时保存编号规则</span></label>
+<div class="action-pair"><button id="saveTemplate" class="btn secondary">保存模板</button><button id="loadTemplate" class="btn secondary">加载模板</button></div><p class="field-hint">模板不包含 PDF、所选页码和逐页手动修改内容。</p></section>
+</aside>
+<section class="preview-pane">
+<div class="preview-header"><div class="document-meta"><strong id="activeName">尚未选择 PDF</strong><span id="docMeta">导入文件后开始编号</span></div><div class="preview-tools"><button id="prevPage" class="icon-btn" title="上一页">‹</button><span class="page-jump">第 <input id="jumpPage" type="number" min="1" value="1"> / <b id="pageTotal">—</b> 页</span><button id="nextPage" class="icon-btn" title="下一页">›</button><span class="tool-separator"></span><button id="zoomOut" class="icon-btn" title="缩小">−</button><span id="zoomText" class="zoom-value">100%</span><button id="zoomIn" class="icon-btn" title="放大">+</button></div></div>
+<div class="page-toolbar"><label id="currentPageToggle" class="check-line page-enable"><input type="checkbox" id="currentChecked"><span>本页添加编号</span></label><div class="toolbar-right"><label class="check-line small-check"><input type="checkbox" id="enablePageMotion" checked><span>动态翻页</span></label><button class="btn compact secondary" id="undoAction" title="撤销页面与编号修改">↶ 撤销</button><button class="btn compact secondary" id="redoAction" title="重做页面与编号修改">↷ 重做</button><label class="check-line small-check"><input type="checkbox" id="localPosition"><span>仅调整本页位置</span></label><button class="btn compact secondary" id="resetPosition">重置本页位置</button></div></div>
+<div id="pageStrip" class="page-strip"></div>
+<div id="previewScroll" class="preview-scroll"><div id="startScreen" class="start-screen"><div class="start-icon">PDF</div><h2>打开 PDF，开始批量编号</h2><p>点击上方「导入 PDF」；PDF 在当前浏览器处理，不上传文件。</p><button id="emptyOpen" class="btn primary">选择 PDF 文件</button></div>
+<div id="paperHolder" class="paper-holder" hidden><div id="transitionGhostHost" aria-hidden="true"></div><div id="paper" class="paper"><img id="pdfImage" draggable="false" alt="PDF 当前页预览"><div id="labelOverlay" class="label-overlay" hidden><span id="overlayText"></span></div></div></div></div>
+<footer class="preview-footer"><div class="footer-status"><div id="status" role="status">就绪 · PDF 不上传</div><a class="github-link" href="https://github.com/Seaout/pdf-label-studio" target="_blank" rel="noopener noreferrer" title="在 GitHub 查看源码" aria-label="GitHub 源码仓库（在新标签页打开）">GitHub ↗</a></div><div class="footer-actions"><button id="exportBatch" class="btn secondary">批量导出所有文件 ZIP</button><button id="btnExportBottom" class="btn primary">导出当前 PDF →</button></div></footer>
+</section>
+</main>
+<div id="dropCover" class="drop-cover" hidden><div class="drop-card"><strong>松开鼠标以添加 PDF</strong><p>支持同时拖入多个 PDF；已有文件不会被清空</p></div></div><div id="toast" class="toast" role="alert" hidden></div>
+<div id="modal" class="modal-backdrop" hidden><div class="modal-card"><h3 id="modalTitle">提示</h3><p id="modalText"></p><button id="modalClose" class="btn primary">知道了</button></div></div>
+<script type="module" src="./app.js"></script>
+</body></html>

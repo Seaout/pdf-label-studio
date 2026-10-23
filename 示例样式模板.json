@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "kind": "PDFLabelStudioStyleTemplate",
+  "style": {
+    "cnFontName": "SimSun",
+    "enFontName": "Times New Roman",
+    "size": 12,
+    "color": "#111111",
+    "bold": false,
+    "x": 15,
+    "y": 12
+  },
+  "rule": {
+    "enablePrefix": true,
+    "prefix": "附件1-",
+    "enableSeq": true,
+    "start": "1",
+    "step": 1,
+    "digitsMode": "auto",
+    "digits": 3,
+    "enableSuffix": false,
+    "suffix": ""
+  }
+}
