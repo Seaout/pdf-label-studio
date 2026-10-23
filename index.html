@@ -2,7 +2,23 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PDF Label</title><link rel="icon" type="image/png" href="./assets/app-icon.png"><link rel="stylesheet" href="./style.css"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"></head>
 <body>
-<header class="topbar"><div class="brand"><img class="brand-app-icon" src="./assets/app-icon.png" alt="PDF Label 图标" width="35" height="35"><div><strong>PDF Label</strong><small>v1.0</small></div></div><div class="top-actions"><span class="offline"><span class="offline-dot"></span>PDF 仅在浏览器本地处理</span><button id="btnOpen" class="btn ghost">＋ 导入 PDF</button><button id="btnExport" class="btn primary">导出当前 PDF</button></div></header>
+<header class="topbar"><div class="brand">
+<a
+  class="brand-icon-link"
+  href="https://github.com/Seaout/pdf-label-studio"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="查看 GitHub 项目"
+>
+  <img
+    class="brand-app-icon"
+    src="./assets/app-icon.png"
+    alt="PDF Label"
+    width="35"
+    height="35"
+  >
+</a>
+<div><strong>PDF Label</strong><small>v1.0</small></div></div><div class="top-actions"><span class="offline"><span class="offline-dot"></span>PDF 仅在浏览器本地处理</span><button id="btnOpen" class="btn ghost">＋ 导入 PDF</button><button id="btnExport" class="btn primary">导出当前 PDF</button></div></header>
 <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden><input type="file" id="tplInput" accept=".json,application/json" hidden>
 <main class="workbench">
 <aside class="settings-scroll">
@@ -41,7 +57,17 @@
 <div id="pageStrip" class="page-strip"></div>
 <div id="previewScroll" class="preview-scroll"><div id="startScreen" class="start-screen"><div class="start-icon">PDF</div><h2>打开 PDF，开始批量编号</h2><p>点击上方「导入 PDF」；PDF 在当前浏览器处理，不上传文件。</p><button id="emptyOpen" class="btn primary">选择 PDF 文件</button></div>
 <div id="paperHolder" class="paper-holder" hidden><div id="transitionGhostHost" aria-hidden="true"></div><div id="paper" class="paper"><img id="pdfImage" draggable="false" alt="PDF 当前页预览"><div id="labelOverlay" class="label-overlay" hidden><span id="overlayText"></span></div></div></div></div>
-<footer class="preview-footer"><div class="footer-status"><div id="status" role="status">就绪 · PDF 不上传</div><a class="github-link" href="https://github.com/Seaout/pdf-label-studio" target="_blank" rel="noopener noreferrer" title="在 GitHub 查看源码" aria-label="GitHub 源码仓库（在新标签页打开）">GitHub ↗</a></div><div class="footer-actions"><button id="exportBatch" class="btn secondary">批量导出所有文件 ZIP</button><button id="btnExportBottom" class="btn primary">导出当前 PDF →</button></div></footer>
+
+<footer class="preview-footer">
+  <div class="footer-status">
+    <div id="status" role="status">就绪 · PDF 不上传</div>
+  </div>
+  <div class="footer-actions">
+    <button id="exportBatch" class="btn secondary">批量导出所有文件 ZIP</button>
+    <button id="btnExportBottom" class="btn primary">导出当前 PDF →</button>
+  </div>
+</footer>
+
 </section>
 </main>
 <div id="dropCover" class="drop-cover" hidden><div class="drop-card"><strong>松开鼠标以添加 PDF</strong><p>支持同时拖入多个 PDF；已有文件不会被清空</p></div></div><div id="toast" class="toast" role="alert" hidden></div>
