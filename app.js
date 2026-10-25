@@ -20,7 +20,8 @@ let dragDepth = 0;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const imageCache = new Map();
-const style = {cnFontId:'builtin',enFontId:'builtin',size:12,color:'#111111',bold:false,x:15,y:12};
+const desiredFontNames={cn:'宋体',en:'Times New Roman'};
+const style = {cnFontId:'pending_cn',enFontId:'pending_en',size:12,color:'#111111',bold:false,x:15,y:12};
 const rule = {enablePrefix:true,prefix:'附件1-',enableSeq:true,start:'1',step:1,digitsMode:'auto',digits:3,enableSuffix:false,suffix:''};
 const controls = ['enablePrefix','prefix','enableSeq','startNum','stepNum','digitsMode','digits','enableSuffix','suffix','fontSize','fontColor','fontBold','posX','posY'];
 const escapeHtml=(x)=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -209,14 +210,14 @@ function isWesternChar(char){
  return /^[\x00-\x7F]$/.test(char) || /^[\u00C0-\u024F]$/.test(char) || /[–—‐‑‘’“”•·…€£¥]/.test(char);
 }
 function displayFontName(f){
- if(!f)return '思源宋体（内置）';
+ if(!f)return '未选择字体';
  if(/^simsun$/i.test(f.name))return '宋体 (SimSun)';
  if(/^nsimsun$/i.test(f.name))return '新宋体 (NSimSun)';
  return f.name;
 }
 function fontCssName(kind){
  const f=fontById(style[kind+'FontId']);
- const faceKey=(!f||f.builtin)?(style.bold?'builtin:bold':'builtin:regular'):(style.bold&&f.boldId?f.boldId:f.id);
+ const faceKey=style.bold&&f?.boldId?f.boldId:(f?.id||'pending');
  return JSON.stringify('PLS_'+faceKey.replace(/[^a-zA-Z0-9_]/g,'_'))+',serif';
 }
 function updateOverlay(){const d=currentDoc();if(!d)return;const item=makeItem(d,d.current), layer=$('labelOverlay');
@@ -262,10 +263,10 @@ async function refreshPreview(){const d=currentDoc();if(!d)return;const request=
  try{
   const baseUrl=await renderBase(d,page);if(request!==requestIndex)return;
   const item=makeItem(d,page);
-  if(!item||!item.text){
+  if(!item||!item.text||!fontsReady()){
    await commitPreviewImage(baseUrl,page,false);
    if(request!==requestIndex)return;
-   $('labelOverlay').hidden=true;status(`第 ${page} 页 · 不添加编号`);return;
+   $('labelOverlay').hidden=true;status(!item||!item.text?`第 ${page} 页 · 不添加编号`:`第 ${page} 页 · 需要先读取字体才能预览编号`);return;
   }
   const resp=await api('/api/preview',{id:d.id,page,style:stylePayload(),scale:1.55,item});
   const blob=await resp.blob();if(request!==requestIndex)return;
@@ -314,7 +315,40 @@ async function openFiles(files){
  }
  renderFiles();refresh();status('导入完成 · PDF 仅存于当前浏览器内存');
 }
-function fontById(id){return fontList.find(f=>f.id===id)||fontList.find(f=>f.id==='builtin');}
+function fontMatches(name, record) {
+  if(!name||!record||record.pending)return false;
+  const a=name.trim().toLowerCase(), b=record.name.toLowerCase();
+  return a===b || (/^(宋体|simsun)$/i.test(a)&&/^(宋体|simsun)$/i.test(b)) ||
+         (/^(新宋体|nsimsun)$/i.test(a)&&/^(新宋体|nsimsun)$/i.test(b));
+}
+function resolveDesiredFonts() {
+  for(const kind of ['cn','en']) {
+    const matching=fontList.find(f=>fontMatches(desiredFontNames[kind],f));
+    if(matching)style[kind+'FontId']=matching.id;
+    else {
+      style[kind+'FontId']='pending_'+kind;
+      const pending=fontList.find(f=>f.id==='pending_'+kind);
+      if(pending)pending.name=desiredFontNames[kind]+'（尚未读取或缺失）';
+    }
+  }
+}
+function fontsReady() {
+  return ['cn','en'].every(kind=>{
+    const record=fontById(style[kind+'FontId']);
+    return record&&!record.pending&&(record.builtin||record.fontData||record.file);
+  });
+}
+function updateFontStatus() {
+  const el=$('fontInfo');
+  if(!fontsReady()) {
+    const missing=['cn','en'].filter(k=>fontById(style[k+'FontId'])?.pending).map(k=>desiredFontNames[k]);
+    el.textContent=`字体尚未就绪（${missing.join('、')}）。请点击「读取已安装字体」并授权，或导入字体文件；不会自动替换为思源宋体。`;
+    el.style.color='#a34731'; return;
+  }
+  el.textContent=`字体已就绪：中文「${fontById(style.cnFontId).name}」、西文「${fontById(style.enFontId).name}」。导出时会尝试嵌入实际字体。`;
+  el.style.color='';
+}
+function fontById(id){return fontList.find(f=>f.id===id)||null;}
 function updateFontWeightNote(){
  const note=$('fontWeightInfo');if(!note)return;
  if(!style.bold){note.hidden=true;note.textContent='';return;}
@@ -323,7 +357,7 @@ function updateFontWeightNote(){
   const f=fontById(style[kind+'FontId']);
   if(f && !f.boldAvailable)missing.push(`${label}「${displayFontName(f)}」`);
  }
- if(missing.length){note.hidden=false;note.textContent=`${missing.join('、')}没有可用的独立粗体字重，这部分文字保持原样（不描边、不自动替换字体）。若需要真实粗体，可改选内置思源宋体等带 Bold 字重的字体。`;}
+ if(missing.length){note.hidden=false;note.textContent=`${missing.join('、')}没有可用的独立粗体字重，这部分文字保持原样（不描边、不自动替换字体）。若需要真实粗体，请选择具有 Bold 字重的本机字体。`;}
  else{note.hidden=false;note.textContent='已找到所选字体的真实 Bold 字重。PDF 使用独立粗体字形，不再模拟描边。';}
 }
 
@@ -335,7 +369,7 @@ function updateFontSearches(){
 }
 function fontSearchResults(kind,typed=''){
  const dest=$(kind+'FontResults'),query=typed.trim().toLocaleLowerCase();
- const matches=fontList.filter(f=>(displayFontName(f)+' '+f.name).toLocaleLowerCase().includes(query)).slice(0,80);
+ const matches=fontList.filter(f=>!f.pending&&(displayFontName(f)+' '+f.name).toLocaleLowerCase().includes(query)).slice(0,80);
  dest.replaceChildren();
  if(!matches.length){dest.innerHTML='<div class="empty-mini">没有匹配字体</div>';dest.hidden=false;return;}
  for(const f of matches){const b=document.createElement('button');b.type='button';b.className='font-option';
@@ -348,8 +382,9 @@ function fontSearchResults(kind,typed=''){
 }
 function chooseFont(kind,id){
  style[kind+'FontId']=id;
+ const f=fontById(id);if(f&&!f.pending)desiredFontNames[kind]=f.name;
  $(kind+'FontResults').hidden=true;
- updateFontSearches();updateFontWeightNote();queuePreview(30);
+ updateFontSearches();updateFontWeightNote();updateFontStatus();queuePreview(30);
 }
 function bindFontPickers(){
  for(const kind of ['cn','en']){
@@ -378,8 +413,8 @@ function bindFontPickers(){
  });
 }
 async function initFonts(){
- fontList=[{id:'builtin',name:'思源宋体（内置常用字）',builtin:true,boldAvailable:true}];
- style.cnFontId='builtin';style.enFontId='builtin';
+ fontList=[{id:'pending_cn',name:'宋体（等待读取）',pending:true,boldAvailable:false},{id:'pending_en',name:'Times New Roman（等待读取）',pending:true,boldAvailable:false}];
+ style.cnFontId='pending_cn';style.enFontId='pending_en';
  const button=$('scanFonts');
  button.addEventListener('click',async()=>{
    if(typeof window.queryLocalFonts!=='function'){
@@ -394,7 +429,7 @@ async function initFonts(){
        if(!groups.has(family))groups.set(family,[]);
        groups.get(family).push(face);
      }
-     const existing=fontList.filter(f=>f.builtin||f.file);
+     const existing=fontList.filter(f=>f.file||f.pending);
      const local=[];let counter=0;
      for(const [family,faceGroup] of groups){
        const regular=faceGroup.find(f=>/^regular$|^normal$|^roman$|^标准$/i.test(f.style||''))||
@@ -408,14 +443,8 @@ async function initFonts(){
        local.push(record);
      }
      fontList=[...existing,...local].sort((a,b)=>a.builtin?-1:b.builtin?1:a.name.localeCompare(b.name,'zh-CN'));
-     const simsun=local.find(f=>/^(simsun|宋体)$/i.test(f.name)||/simsun/i.test(f.postscriptName||''));
-     const tnr=local.find(f=>/^times new roman$/i.test(f.name));
-     style.cnFontId=simsun?.id||style.cnFontId;
-     style.enFontId=tnr?.id||style.enFontId;
-     $('fontInfo').textContent=`已授权读取 ${local.length} 个本机字体家族。`+
-       `${simsun?'中文选用真正宋体 SimSun':'未发现宋体，中文使用当前字体'}；`+
-       `${tnr?'西文选用 Times New Roman':'未发现 Times New Roman，西文使用当前字体'}。导出时会检查字体嵌入权限。`;
-     updateFontSearches();updateFontWeightNote();queuePreview(60);
+     resolveDesiredFonts();
+     updateFontSearches();updateFontWeightNote();updateFontStatus();queuePreview(60);
      toast(`已读取 ${local.length} 个字体家族`);
    }catch(e){toast('读取本机字体失败：'+e.message,true);}
    finally{button.disabled=false;button.textContent='读取已安装字体';}
@@ -431,12 +460,12 @@ async function initFonts(){
      toast('已选字体 '+file.name+'；导出时验证能否嵌入。');
    });
  }
- updateFontSearches();updateFontWeightNote();
- if(typeof window.queryLocalFonts!=='function')$('fontInfo').textContent='本浏览器不能直接列出系统字体，可上传 TTF/OTF/TTC。默认使用可合法分发的内置常用字思源宋体。';
+ updateFontSearches();updateFontWeightNote();updateFontStatus();
+ if(typeof window.queryLocalFonts!=='function')$('fontInfo').textContent='本浏览器不能直接列出系统字体，可上传 TTF/OTF/TTC。不会自动使用替代字体。';
 }
 
 async function exportOne(){const d=currentDoc();if(!d){toast('请先选择 PDF',true);return;}
- const items=allItems(d);if(items.some(x=>!x.text)){toast('有勾选页的编号为空，请修改后导出',true);return;}
+ const items=allItems(d);if(items.length&&!fontsReady()){updateFontStatus();toast('未读取完整字体：请先读取本机字体或导入字体，不会自动使用思源宋体。',true);return;}if(items.some(x=>!x.text)){toast('有勾选页的编号为空，请修改后导出',true);return;}
  status('正在生成 PDF 并嵌入字形…');$('btnExport').disabled=true;$('btnExportBottom').disabled=true;
  try{const resp=await api('/api/export',{id:d.id,items,style:stylePayload()});
  const blob=await resp.blob();downloads(blob,filenameBase(d.name)+'_已编号.pdf');toast(`已生成 ${items.length} 个编号；PDF 已保存到浏览器下载位置。`);status(`导出完成 · ${items.length} 页编号`);
@@ -444,6 +473,7 @@ async function exportOne(){const d=currentDoc();if(!d){toast('请先选择 PDF',
 }
 async function exportBatch(){if(!docs.length)return;
  const jobs=docs.map(d=>({id:d.id,items:allItems(d),style:stylePayload()}));
+ if(jobs.some(j=>j.items.length)&&!fontsReady()){updateFontStatus();toast('未读取完整字体：请先读取或导入字体。',true);return;}
  if(jobs.some(j=>j.items.some(x=>!x.text))){toast('存在空编号，请检查映射表',true);return;}
  status('批量导出并压缩中…');$('exportBatch').disabled=true;
  try{const resp=await api('/api/export-batch',{jobs});const blob=await resp.blob();downloads(blob,'PDF附件编号_批量导出.zip');toast(`已打包 ${jobs.length} 个 PDF`);status('批量导出完成');}
@@ -452,7 +482,7 @@ async function exportBatch(){if(!docs.length)return;
 }
 function saveTemplate(){
  const data={version:2,kind:'PDFLabelStudioStyleTemplate',
-  style:{...style,cnFontName:fontById(style.cnFontId)?.name||'思源宋体（内置）',enFontName:fontById(style.enFontId)?.name||'思源宋体（内置）'},
+  style:{...style,cnFontName:desiredFontNames.cn,enFontName:desiredFontNames.en},
   rule:$('saveRule').checked?{...rule}:null};
  downloads(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'PDF_Label_Style.json');
  toast('已保存样式模板（不包含 PDF、页码或编号映射）');
@@ -461,11 +491,10 @@ async function loadTemplate(file){try{
  const content=JSON.parse(await file.text());if(content.kind!=='PDFLabelStudioStyleTemplate')throw Error('不是 PDF Label Studio 模板');
  const st=content.style||{};
  for(const key of ['size','color','bold','x','y'])if(st[key]!==undefined)style[key]=st[key];
- const findName=(name)=>fontList.find(f=>f.name===name);
- const cnName=st.cnFontName||st.fontName;
- const enName=st.enFontName;
- if(cnName){const font=findName(cnName);style.cnFontId=font?.id||'builtin';if(!font)toast(`本机没有模板中文字体「${cnName}」，已使用内置字体`,true);}
- if(enName){const font=findName(enName);style.enFontId=font?.id||'builtin';if(!font)toast(`本机没有模板西文字体「${enName}」，已使用内置字体`,true);}
+ const cnName=st.cnFontName||st.fontName, enName=st.enFontName;
+ if(cnName)desiredFontNames.cn=/思源宋体（内置/.test(cnName)?'宋体':cnName;
+ if(enName)desiredFontNames.en=/思源宋体（内置/.test(enName)?'Times New Roman':enName;
+ resolveDesiredFonts();updateFontStatus();
  // v1 template has only a single font; keep an independent Western default.
  if(content.rule)for(const key of Object.keys(rule))if(content.rule[key]!==undefined)rule[key]=content.rule[key];
  updateInputs();renderMapping();updatePositionControls();queuePreview();toast('已载入模板');

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PDF Label</title><link rel="icon" type="image/png" href="./assets/app-icon.png"><link rel="stylesheet" href="./style.css"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"></head>
+<title>PDF Label</title><link rel="icon" type="image/png" href="./assets/app-icon.png"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"><link rel="stylesheet" href="./style.css">
+</head>
 <body>
 <header class="topbar"><div class="brand">
 <a
@@ -18,7 +19,7 @@
     height="35"
   >
 </a>
-<div><strong>PDF Label</strong><small>v1.0</small></div></div><div class="top-actions"><span class="offline"><span class="offline-dot"></span>PDF 仅在浏览器本地处理</span><button id="btnOpen" class="btn ghost">＋ 导入 PDF</button><button id="btnExport" class="btn primary">导出当前 PDF</button></div></header>
+<div><strong>PDF Label</strong><small>v1.1</small></div></div><div class="top-actions"><span class="offline"><span class="offline-dot"></span>PDF 仅在浏览器本地处理</span><button id="btnOpen" class="btn ghost">＋ 导入 PDF</button><button id="btnExport" class="btn primary">导出当前 PDF</button></div></header>
 <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden><input type="file" id="tplInput" accept=".json,application/json" hidden>
 <main class="workbench">
 <aside class="settings-scroll">
@@ -41,7 +42,7 @@
 <div class="two-cols font-grid">
 <div class="font-field"><label for="cnFontSearch">中文字体</label><div class="font-picker"><input id="cnFontSearch" class="control font-search" type="text" spellcheck="false" autocomplete="off" placeholder="搜索中文字体" aria-label="中文字体"><div class="font-results" id="cnFontResults" hidden></div></div></div>
 <div class="font-field"><label for="enFontSearch">西文字体</label><div class="font-picker"><input id="enFontSearch" class="control font-search" type="text" spellcheck="false" autocomplete="off" placeholder="Search fonts" aria-label="西文字体"><div class="font-results" id="enFontResults" hidden></div></div></div>
-</div><div class="browser-font-ops"><button type="button" id="scanFonts" class="btn secondary">读取已安装字体</button><label class="font-file-label">导入中文字体<input type="file" id="cnFontFile" accept=".ttf,.otf,.ttc" hidden></label><label class="font-file-label">导入西文字体<input type="file" id="enFontFile" accept=".ttf,.otf,.ttc" hidden></label></div><p class="field-hint" id="fontInfo">优先使用本机宋体（SimSun）＋ Times New Roman，PDF 中分别嵌入中文和西文字形；需授权读取本机字体；未授权时使用内置常用字思源宋体。</p>
+</div><div class="browser-font-ops"><button type="button" id="scanFonts" class="btn secondary">读取已安装字体</button><label class="font-file-label">导入中文字体<input type="file" id="cnFontFile" accept=".ttf,.otf,.ttc" hidden></label><label class="font-file-label">导入西文字体<input type="file" id="enFontFile" accept=".ttf,.otf,.ttc" hidden></label></div><p class="field-hint" id="fontInfo">请先点击“读取已安装字体”并授权。默认目标为宋体＋Times New Roman，未授权时不会自动替换字体。</p>
 <div class="two-cols"><label class="field">字号（pt）<input id="fontSize" class="control" type="number" min="4" max="90" step="0.5" value="12"></label><label class="field">文字颜色<input id="fontColor" class="color-input" type="color" value="#111111"></label></div>
 <label class="check-line"><input type="checkbox" id="fontBold"> <span>加粗（仅使用真实 Bold 字重）</span></label>
 <p id="fontWeightInfo" class="field-hint font-weight-note" hidden></p>
